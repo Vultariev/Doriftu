@@ -42,17 +42,13 @@ int loadTexture(char tex[])
 {
   if(texts >= MAX_TEX)
   {
-    fprintf(stderr,"Can't load any more textures: buffer is full");
+    fprintf(stderr, "Can't load any more textures: buffer is full\n\n");
     return -2;
   }
   SDL_Surface *buff = IMG_Load(tex);
   if(buff == NULL)
   {
-    buff = IMG_Load("resources/sprites/null-ship.png");
-  }
-  if(buff == NULL)
-  {
-    fprintf(stderr,"Could not load resources/sprites/null-ship.png: %s\n",SDL_GetError());
+    fprintf(stderr, "Could not load %s: %s\n\n", tex, SDL_GetError());
     return -1;
   }
 
@@ -90,4 +86,29 @@ SDL_Texture * grabTexture(char tex[])
     return textures[textureIndex(tex)].data;
   }
   return NULL;
+}
+
+int drawTexture(char tex[], vec pos, double angle, double scalex, double scaley)
+{
+  SDL_Texture * draw = grabTexture(tex);
+  if(draw == NULL)
+  {
+    if(loadTexture(tex) != 0)
+    {
+      return -1;
+    }
+  }
+  draw = grabTexture(tex);
+  if(draw == NULL)
+  {
+    return -2;
+  }
+  SDL_Rect d;
+  SDL_QueryTexture(draw, NULL, NULL, &d.w, &d.h);
+  d.w *= scalex;
+  d.y *= scaley;
+  d.x = (int)pos.x - d.w/2;
+  d.y = (int)pos.y - d.y/2;
+  SDL_RenderCopyEx(ren, draw, NULL, &d, angle, NULL, 0);
+  return 0;
 }
