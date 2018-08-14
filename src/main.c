@@ -1,11 +1,15 @@
 #include <stdio.h>
 #include "SDL2/SDL.h"
+#include "engine.h"
+
+#define G_rate 100.000
+#define R_rate 60.000
 
 int main(void)
 {
-  SDL_Init(SDL_INIT_VIDEO);
-  SDL_Event event;
-  SDL_Window *win = SDL_CreateWindow("Doriftu", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 640, 400, 0);
+  init();
+  int t = 0;
+
 
   while(1)
   {
@@ -13,13 +17,25 @@ int main(void)
     {
       if(event.type == SDL_QUIT)
       {
-        goto end;
+        SDL_DestroyWindow(win);
+        SDL_Quit();
+        return 0;
       }
     }
-  }
 
-  end:
-  SDL_DestroyWindow(win);
-  SDL_Quit();
-  return 0;
+    if(t % (int)(G_rate/R_rate) == 0)
+    {
+      
+    }
+
+    if(t % (int)(G_rate/R_rate) == 1)
+    {
+      SDL_RenderPresent(ren);
+    }
+
+    SDL_Delay(1000/G_rate);
+    t = t < G_rate ? t + 1 : 0;
+    printf("\033[2KT: %d\r",t);
+    fflush(stdout);
+  }
 }
