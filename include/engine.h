@@ -32,6 +32,8 @@ SDL_Window *win;
 
 SDL_Renderer *ren;
 
+color backgroundColor;
+
 //Making a varible for events like keypresses, mouse movements, etc...
 SDL_Event event;
 
