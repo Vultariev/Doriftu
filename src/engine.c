@@ -13,6 +13,8 @@ void init()
 
   //Creating a renderer to draw stuff like textures
   ren = SDL_CreateRenderer(win,-1,SDL_RENDERER_ACCELERATED);
+
+  backgroundColor = createColor(255, 255, 255, 255)
 }
 
 color createColor(Uint8 r, Uint8 g, Uint8 b, Uint8 a)
