@@ -17,6 +17,27 @@ void init()
   backgroundColor = createColor(255, 255, 255, 255);
 }
 
+double neg(double a)
+{
+  if(a > 0)
+  {
+    return 1;
+  }
+  if(a < 0)
+  {
+    return -1;
+  }
+  return 0;
+}
+
+vec Vec(double x, double y)
+{
+  vec o;
+  o.x = x;
+  o.y = y;
+  return o;
+}
+
 color createColor(Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 {
   color out;
@@ -25,6 +46,14 @@ color createColor(Uint8 r, Uint8 g, Uint8 b, Uint8 a)
   out.b = b;
   out.a = a;
   return out;
+}
+
+void setTires(car* in, char all[])
+{
+  strcpy(in->FR.tex, all);
+  strcpy(in->FL.tex, all);
+  strcpy(in->RR.tex, all);
+  strcpy(in->RL.tex, all);
 }
 
 void setDrawColor(color in)
@@ -42,7 +71,7 @@ int loadTexture(char tex[])
 {
   if(texts >= MAX_TEX)
   {
-    fprintf(stderr, "Can't load any more textures: buffer is full\n\n");
+    fprintf(stderr, "Cannot load any more textures: buffer is full\n\n");
     return -2;
   }
   SDL_Surface *buff = IMG_Load(tex);
@@ -106,9 +135,50 @@ int drawTexture(char tex[], vec pos, double angle, double scalex, double scaley)
   SDL_Rect d;
   SDL_QueryTexture(draw, NULL, NULL, &d.w, &d.h);
   d.w *= scalex;
-  d.y *= scaley;
+  d.h *= scaley;
   d.x = (int)pos.x - d.w/2;
-  d.y = (int)pos.y - d.y/2;
+  d.y = (int)pos.y - d.h/2;
   SDL_RenderCopyEx(ren, draw, NULL, &d, angle, NULL, 0);
   return 0;
+}
+
+double magnitude(vec a)
+{
+  return sqrt(a.x*a.x+a.y*a.y);
+}
+
+double direction(vec a)
+{
+  if(a.y >= 0)
+  {
+    return -atan(a.x/a.y)*180/M_PI;
+  }
+  else
+  {
+    return -(-atan(a.y/a.x)*180/M_PI + 90*neg(a.x));
+  }
+}
+
+vec split(double direction, double magnitude)
+{
+  vec out;
+  out.y = sin(direction*M_PI/180 - M_PI/2)*magnitude;
+  out.x = cos(direction*M_PI/180 - M_PI/2)*magnitude;
+  return out;
+}
+
+vec vadd(vec a, vec b)
+{
+  a.x += b.x;
+  a.y += b.y;
+  return a;
+}
+
+void drawCar(car * in)
+{
+  drawTexture(in->FR.tex, vadd(in->pos,split(in->angle + direction(in->FR.pos), magnitude(in->FR.pos)*in->scale)), in->angle + in->FR.steer, in->scale, in->scale);
+  drawTexture(in->FL.tex, vadd(in->pos,split(in->angle + direction(in->FL.pos), magnitude(in->FL.pos)*in->scale)), in->angle + in->FL.steer, in->scale, in->scale);
+  drawTexture(in->RR.tex, vadd(in->pos,split(in->angle + direction(in->RR.pos), magnitude(in->RR.pos)*in->scale)), in->angle + in->RR.steer, in->scale, in->scale);
+  drawTexture(in->RL.tex, vadd(in->pos,split(in->angle + direction(in->RL.pos), magnitude(in->RL.pos)*in->scale)), in->angle + in->RL.steer, in->scale, in->scale);
+  drawTexture(in->tex, in->pos, in->angle, in->scale, in->scale);
 }
