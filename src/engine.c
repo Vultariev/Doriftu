@@ -4,6 +4,7 @@
 
 void init()
 {
+  ctrls = 0;
   texts = 0;
   //Starting up good 'ol SDL2 with video
   SDL_Init(SDL_INIT_VIDEO);
@@ -27,7 +28,7 @@ double neg(double a)
   {
     return -1;
   }
-  return 0;
+  return 1;
 }
 
 vec Vec(double x, double y)
@@ -46,6 +47,58 @@ color createColor(Uint8 r, Uint8 g, Uint8 b, Uint8 a)
   out.b = b;
   out.a = a;
   return out;
+}
+
+int ctrlindex(char label[])
+{
+  int i = ctrls-1;
+  while(i >= 0)
+  {
+    if(strcmp(controls[i].label,label) == 0)
+    {
+      return i;
+    }
+    i--;
+  }
+  return -1;
+}
+
+void createctrl(char label[], SDL_Keycode key)
+{
+  if(ctrlindex(label) == -1)
+  {
+    strcat(controls[ctrls].label, label);
+    controls[ctrls].key = key;
+    ctrls++;
+  }
+}
+
+double getctrl(char label[])
+{
+  return controls[ctrlindex(label)].value;
+}
+
+void applyForce(car *in, vec force, vec pos)
+{
+  vec delta = in->pos;
+  delta.x -= pos.x;
+  delta.y -= pos.y;
+  in->force.x += force.x;
+  in->force.y += force.y;
+  in->torque += magnitude(delta)*sin((direction(delta) + direction(force))*M_PI/180);
+}
+
+void tickCar(car* in)
+{
+  in->vel.x += in->force.x/in->mass/G_rate;
+  in->vel.y += in->force.y/in->mass/G_rate;
+  in->force.x = 0;
+  in->force.y = 0;
+  in->pos.x += in->vel.x/G_rate;
+  in->pos.y += in->vel.y/G_rate;
+  in->angvel += in->torque/in->inertia/G_rate;
+  in->torque = 0;
+  in->angle += in->angvel/G_rate;
 }
 
 void setTires(car* in, char all[])
@@ -149,14 +202,15 @@ double magnitude(vec a)
 
 double direction(vec a)
 {
-  if(a.y >= 0)
+  if(a.y > 0)
   {
     return -atan(a.x/a.y)*180/M_PI;
   }
-  else
+  if(a.x != 0)
   {
     return -(-atan(a.y/a.x)*180/M_PI + 90*neg(a.x));
   }
+  return 0;
 }
 
 vec split(double direction, double magnitude)
